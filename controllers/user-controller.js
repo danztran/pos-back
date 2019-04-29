@@ -2,33 +2,33 @@ const User = requireWrp('models/user');
 const validator = requireWrp('modules/validator-config');
 
 const ctrl = {
-	query: async function(req, res, next) {
+	async query(req, res, next) {
 		const rules = {
 			length: 'required|numeric',
 			index: 'required|numeric',
 			text: 'alpha_num',
 			sortField: 'required',
-			order: 'required',
-		}
+			order: 'required'
+		};
 		const queryOptions = req.body;
 
 		if (!validator.validateAutoRes(queryOptions, rules, res)) return;
 
-		let result = {};
+		const result = {};
 		try {
 			result.users = await User.find().queryPlan('A', queryOptions).exec();
 			result.count = await User.estimatedDocumentCount();
-			res.message['user.query'] = `Done query`;
-
-		} catch (error) {
-			res.message['user.query'] = `Query user error`;
+			res.message['user.query'] = 'Done query';
+		}
+		catch (error) {
+			res.message['user.query'] = 'Query user error';
 			return next(error);
 		}
 
 		return res.sendwm(result);
 	},
 
-	add: async function(req, res, next) {
+	async add(req, res, next) {
 		const rules = {
 			fullname: 'required',
 			username: 'required|alpha_num|between:3,32',
@@ -37,26 +37,27 @@ const ctrl = {
 			isStaff: 'required|boolean',
 			isAdmin: 'required|boolean'
 		};
-		let userInfo = req.body;
+		const userInfo = req.body;
 
 		// validate
 		if (!validator.validateAutoRes(userInfo, rules, res)) return;
 
-		let result = {};
+		const result = {};
 
 		try {
-			let userAdd = new User(userInfo);
+			const userAdd = new User(userInfo);
 			// check unique
-			let user = await User.findOne({username: userAdd.username}).exec();
+			const user = await User.findOne({ username: userAdd.username }).exec();
 			if (user) {
 				res.status(409);
-				res.message['username'] = `Username has already been taken`;
-			} else {
+				res.message.username = 'Username has already been taken';
+			}
+			else {
 				result.user = await userAdd.save();
 				res.message['user.add'] = `Added new user <${userAdd.fullname}>`;
 			}
-
-		} catch (error) {
+		}
+		catch (error) {
 			res.message['user.add'] = 'Add user error';
 			return next(error);
 		}
@@ -64,7 +65,7 @@ const ctrl = {
 		return res.sendwm(result);
 	},
 
-	edit: async function(req, res, next) {
+	async edit(req, res, next) {
 		const rules = {
 			fullname: 'required',
 			username: 'required|alpha_num|between:3,32',
@@ -73,44 +74,43 @@ const ctrl = {
 			isStaff: 'required|boolean',
 			isAdmin: 'required|boolean'
 		};
-		let userInfo = req.body;
+		const userInfo = req.body;
 
 		// validate
 		if (!validator.validateAutoRes(userInfo, rules, res)) return;
 
-		let result = {};
+		const result = {};
 
 		try {
 			// find and update
-			let user = await User.findOne({
+			const user = await User.findOne({
 				username: userInfo.username
 			}).exec();
 
 			if (!user) {
 				// if username not found. close.
 				res.status(404);
-				res.message['username'] = 'User not found';
-
-			} else if (!user.isAdmin || user.username === req.user.username){
+				res.message.username = 'User not found';
+			}
+			else if (!user.isAdmin || user.username === req.user.username) {
 				// pass if current user edit their account or the account is not an admin adccount
 				user.set(userInfo);
 				result.user = await user.save();
 				res.message['user.edit'] = `Edited user <${userInfo.fullname}> information`;
-
-			} else {
+			}
+			else {
 				// fail if edit other admin account
 				res.status(403);
-				res.message['user.edit'] = `You do not have permission to make change to this user`;
-
+				res.message['user.edit'] = 'You do not have permission to make change to this user';
 			}
-
-		} catch (error) {
+		}
+		catch (error) {
 			res.message['user.edit'] = 'Edit user error';
 			return next(error);
 		}
 
 		return res.sendwm(result);
 	}
-}
+};
 
 module.exports = ctrl;

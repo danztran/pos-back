@@ -1,36 +1,73 @@
 {
-  "name": "pos-branch-be",
-  "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.16.4",
-    "express-session": "^1.16.1",
-    "material-ui": "^1.0.0-beta.47",
-    "mongoose": "^5.5.2",
-    "morgan": "^1.9.1",
-    "passport": "^0.4.0",
-    "passport-local": "^1.0.0",
-    "session": "^0.1.0",
-    "validator": "^10.11.0",
-    "validatorjs": "^3.15.1"
-  },
-  "devDependencies": {
-    "nodemon": "^1.18.11"
-  },
-  "scripts": {
-    "start": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/danztran/pos-branch-be.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/maituongluanvn/Project_Architecture/issues"
-  },
-  "homepage": "https://github.com/maituongluanvn/Project_Architecture#readme"
+	"name": "pos-branch-be",
+	"version": "1.0.0",
+	"description": "",
+	"main": "app.js",
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.16.4",
+		"express-session": "^1.16.1",
+		"material-ui": "^1.0.0-beta.47",
+		"mongoose": "^5.5.2",
+		"morgan": "^1.9.1",
+		"passport": "^0.4.0",
+		"passport-local": "^1.0.0",
+		"session": "^0.1.0",
+		"validator": "^10.11.0",
+		"validatorjs": "^3.15.1"
+	},
+	"devDependencies": {
+		"eslint": "^5.16.0",
+		"eslint-config-airbnb-base": "^13.1.0",
+		"eslint-plugin-import": "^2.17.2",
+		"nodemon": "^1.18.11"
+	},
+	"scripts": {
+		"start": "nodemon app.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"eslintConfig": {
+		"extends": "airbnb-base",
+		"env": {
+			"es6": true,
+			"browser": true
+		},
+		"rules": {
+			"indent": [
+				"error",
+				"tab"
+			],
+			"brace-style": [
+				"error",
+				"stroustrup"
+			],
+			"space-before-function-paren": [
+				"error",
+				"never"
+			],
+			"comma-dangle": [
+				"error",
+				"never"
+			],
+			"no-unused-vars": [
+				"error"
+			],
+			"no-var": [
+				"error"
+			],
+			"one-var": [
+				"off"
+			]
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/danztran/pos-branch-be.git"
+	},
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "git+https://github.com/danztran/pos-branch-be/issues"
+	},
+	"homepage": "git+https://github.com/danztran/pos-branch-be#readme"
 }

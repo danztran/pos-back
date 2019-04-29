@@ -3,6 +3,6 @@ module.exports = function(req, res, next) {
 	res.sendwm = function(body = {}) {
 		body.message = res.message;
 		return res.send(body);
-	}
+	};
 	next();
 };
