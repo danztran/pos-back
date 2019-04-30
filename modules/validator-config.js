@@ -1,7 +1,5 @@
 const validator = require('validatorjs');
 
-const queries = requireWrp('modules/queries');
-
 validator.setAttributeFormatter((attribute) => {
 	const firstkey = attribute[0];
 	return attribute.replace(firstkey, firstkey.toUpperCase());

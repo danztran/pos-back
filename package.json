@@ -33,31 +33,15 @@
 			"browser": true
 		},
 		"rules": {
-			"indent": [
-				"error",
-				"tab"
-			],
-			"brace-style": [
-				"error",
-				"stroustrup"
-			],
-			"space-before-function-paren": [
-				"error",
-				"never"
-			],
-			"comma-dangle": [
-				"error",
-				"never"
-			],
-			"no-unused-vars": [
-				"error"
-			],
-			"no-var": [
-				"error"
-			],
-			"one-var": [
-				"off"
-			]
+			"indent": ["error", "tab",  { "SwitchCase": 1 }],
+			"brace-style": ["error", "stroustrup"],
+			"eol-last": ["error", "always"],
+			"semi": [1, "always"],
+			"space-before-function-paren": ["error", "never"],
+			"comma-dangle": ["error", "never"],
+			"no-unused-vars": ["error"],
+			"no-var": ["error"],
+			"one-var": ["off"]
 		}
 	},
 	"repository": {

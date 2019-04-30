@@ -6,7 +6,7 @@ const ctrl = {
 		const rules = {
 			length: 'required|numeric',
 			index: 'required|numeric',
-			text: 'alpha_num',
+			text: 'string',
 			sortField: 'required',
 			order: 'required'
 		};

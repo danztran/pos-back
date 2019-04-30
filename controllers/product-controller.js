@@ -10,7 +10,7 @@ const ctrl = {
 		const rules = {
 			length: 'required|numeric',
 			index: 'required|numeric',
-			text: 'alpha_num',
+			text: 'string',
 			sortField: 'required',
 			order: 'required'
 		};
@@ -34,11 +34,11 @@ const ctrl = {
 
 	async add(req, res, next) {
 		const rules = {
-			name: 'alpha_num|between:3,32|required',
-			code: 'alpha_num|digits:4|required',
+			name: 'string|between:3,32|required',
+			code: 'alpha_num|digits:6|required',
 			origin: 'numeric|required',
 			price: 'numeric|required',
-			sale: 'numeric',
+			sale: 'numeric|required_with_all:saleBegin,saleEnd',
 			saleBegin: 'date|required_with:sale',
 			saleEnd: 'date|required_with:sale|after:saleBegin',
 			quantity: 'numeric|required',
@@ -73,11 +73,11 @@ const ctrl = {
 
 	async edit(req, res, next) {
 		const rules = {
-			name: 'alpha_num|between:3,32|required',
-			code: 'alpha_num|digits:4|required',
+			name: 'string|between:3,32|required',
+			code: 'alpha_num|digits:6|required',
 			origin: 'numeric|required',
 			price: 'numeric|required',
-			sale: 'numeric',
+			sale: 'numeric|required_with_all:saleBegin,saleEnd',
 			saleBegin: 'date|required_with:sale',
 			saleEnd: 'date|required_with:sale|after:saleBegin',
 			quantity: 'numeric|required',
@@ -88,8 +88,8 @@ const ctrl = {
 		if (!validator.validateAutoRes(productInfo, rules, res)) return;
 
 		if (!productInfo.sale) {
-			productInfo.saleBegin = '';
-			productInfo.saleEnd = '';
+			productInfo.saleBegin = null;
+			productInfo.saleEnd = null;
 		}
 
 		const result = {};
