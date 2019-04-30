@@ -9,7 +9,6 @@ router.use(authMiddleware.authen);
 router.get('/info', productController.info);
 router.post('/query', productController.query);
 
-router.use(authMiddleware.authenAdmin);
 router.post('/add', productController.add);
 router.post('/edit', productController.edit);
 

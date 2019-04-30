@@ -25,7 +25,7 @@ const billRouter = requireWrp('routes/bill-router');
 
 const app = express();
 const port = process.env.POST || 8080;
-const host = port === 8080 ? 'http://localhost:8080' : '';
+const host = port === 8080 ? 'http://localhost:8080/' : '';
 
 // connect database
 mongoose.set('useCreateIndex', true);
@@ -33,11 +33,11 @@ mongoose.connect(dbconfig.uri, { useNewUrlParser: true }).then(() => {
 	app.listen(port, () => {
 		console.log('\n\tListening on:',
 		            '\x1b[36m\x1b[4m',
-		            'http://localhost:8080/ \n',
-		            '\x1b[0m');
+		            host,
+		            '\x1b[0m\n');
 	});
 }).catch((err) => {
-	console.log('Not Connected to Database ERROR! \n', err);
+	console.log('ERROR: Failure connect to database ! \n', err);
 });
 
 
