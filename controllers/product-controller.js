@@ -14,14 +14,20 @@ const ctrl = {
 			sortField: 'required',
 			order: 'required'
 		};
-		const queryOptions = req.body;
+		const queryOption = req.body;
 
-		if (!validator.validateAutoRes(queryOptions, rules, res)) return;
+		if (!validator.validateAutoRes(queryOption, rules, res)) return;
 
 		const result = {};
 		try {
-			result.products = await Product.find().queryPlan('A', queryOptions).exec();
-			result.count = await Product.estimatedDocumentCount();
+			result.products = await Product.find().queryPlan('A', queryOption).exec();
+			if (!queryOption.text) {
+				result.count = await Product.estimatedDocumentCount();
+			}
+			else {
+				result.count = await Product.find().queryByString(queryOption.text).count();
+			}
+
 			res.message['product.query'] = 'Done query';
 		}
 		catch (error) {

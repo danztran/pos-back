@@ -20,7 +20,7 @@ const ProductSchema	= new mongoose.Schema({
 
 // query helpers
 ProductSchema.query.queryByString = function(str) {
-	const regexp = new RegExp(str, 'gi');
+	const regexp = new RegExp(str.replace(/\W/g, ''), 'gi');
 	return this.find({
 		$or: [
 			{ name: regexp },

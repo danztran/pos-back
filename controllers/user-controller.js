@@ -10,14 +10,20 @@ const ctrl = {
 			sortField: 'required',
 			order: 'required'
 		};
-		const queryOptions = req.body;
+		const queryOption = req.body;
 
-		if (!validator.validateAutoRes(queryOptions, rules, res)) return;
+		if (!validator.validateAutoRes(queryOption, rules, res)) return;
 
 		const result = {};
 		try {
-			result.users = await User.find().queryPlan('A', queryOptions).exec();
-			result.count = await User.estimatedDocumentCount();
+			result.users = await User.find().queryPlan('A', queryOption).exec();
+			if (!queryOption.text) {
+				result.count = await User.estimatedDocumentCount();
+			}
+			else {
+				result.count = await User.find().queryByString(queryOption.text).count();
+			}
+
 			res.message['user.query'] = 'Done query';
 		}
 		catch (error) {
