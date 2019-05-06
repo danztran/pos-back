@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const CustomerSchema = new mongoose.Schema({
 	fullname: { type: String, required: true },
-	phone: String,
+	phone: { type: String, unique: true, required: true},
 	point: { type: Number, min: 0, default: 0 }
 }, {
 	timestamps: true
@@ -10,7 +10,8 @@ const CustomerSchema = new mongoose.Schema({
 
 // query helpers
 CustomerSchema.query.queryByString = function(str) {
-	const regexp = new RegExp(str.replace(/\W/g, ''), 'gi');
+	str = str.replace(/[^a-zA-Z0-9 ]/g, "");
+	const regexp = new RegExp(str, 'gi');
 	return this.find({
 		$or: [
 			{ fullname: regexp },

@@ -24,7 +24,8 @@ UserSchema.pre('save', function(next) {
 
 // query helpers
 UserSchema.query.queryByString = function(str) {
-	const regexp = new RegExp(str.replace(/\W/g, ''), 'gi');
+	str = str.replace(/[^a-zA-Z0-9 ]/g, '');
+	const regexp = new RegExp(str, 'gi');
 	return this.find({
 		$or: [
 			{ fullname: regexp },
@@ -41,15 +42,15 @@ UserSchema.query.queryPlan = function(plan, options) {
 	let data;
 	switch (plan) {
 	// Plan A: query if include text, sort by field, skip by index and limit by length
-	case 'A':
-		data = this
-			.queryByString(text)
-			.sort((order === 'asc' ? '' : '-') + sortField)
-			.skip(parseInt(index))
-			.limit(parseInt(length));
+		case 'A':
+			data = this
+				.queryByString(text)
+				.sort((order === 'asc' ? '' : '-') + sortField)
+				.skip(parseInt(index))
+				.limit(parseInt(length));
 
-	default:
-		data = this;
+		default:
+			data = this;
 	}
 	return data;
 };

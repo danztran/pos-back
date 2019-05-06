@@ -20,7 +20,8 @@ const ProductSchema	= new mongoose.Schema({
 
 // query helpers
 ProductSchema.query.queryByString = function(str) {
-	const regexp = new RegExp(str.replace(/\W/g, ''), 'gi');
+	str = str.replace(/[^a-zA-Z0-9 ]/g, "");
+	const regexp = new RegExp(str, 'gi');
 	return this.find({
 		$or: [
 			{ name: regexp },
@@ -48,6 +49,5 @@ ProductSchema.query.queryPlan = function(plan, options) {
 	}
 	return data;
 };
-
 
 module.exports = mongoose.model('Product', ProductSchema);

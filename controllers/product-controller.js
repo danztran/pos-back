@@ -3,7 +3,21 @@ const validator = requireWrp('modules/validator-config');
 
 const ctrl = {
 	async info(req, res, next) {
+		const rules = {
+			code: 'required|true'
+		};
+		if (!validator.validateAutoRes(req.params, rules, res)) return;
+		const { code } = req.params;
+		const result = {};
+		try {
+			result.product = await Product.findOne({code}).exec();
+		}
+		catch (error) {
+			res.message['product.info'] = 'Get product error';
+			return next(error);
+		}
 
+		return res.sendwm(result);
 	},
 
 	async query(req, res, next) {

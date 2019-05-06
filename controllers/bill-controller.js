@@ -1,21 +1,170 @@
-const product = requireWrp('models/product.js');
-// add product into db
-// const mock_product = requireWrp('models/mock_product.json');
-// let productAdd = new product();
-// productAdd.save();
-// product.create(mock_product); 
+const validator = requireWrp('modules/validator-config');
+const { customSort } = requireWrp('modules/common');
+const Bill = requireWrp('models/bill');
+const Product = requireWrp('models/product');
+const Customer = requireWrp('models/customer');
+const pointPlus = 5; // point plus after paid. % of total;
 
-// product.find({}, function(err,res){
-//   console.log(res.length);	
-// });
+const ctrl = {
+	async query(req, res, next) {
+		const rules = {
+			length: 'numeric|required',
+			index: 'numeric|required',
+			text: 'string',
+			sortField: 'string|required',
+			order: 'in:asc,desc|required'
+		};
+		const queryOption = req.body;
+		const {
+			text, sortField, order, index, length
+		} = queryOption;
 
-// get data
-var data = [];
-product.find({}, function(req,res){data = data.concat(res);});
-// get data
+		if (!validator.validateAutoRes(queryOption, rules, res)) return;
 
-module.exports = {
-  postProduct: function (req,res,next) {
-    res.send(data);
-  }
-}
+		const result = {};
+		try {
+			// query all
+			let bills = await Bill.find().queryPlan('A').exec();
+
+			// search
+			const search = text.toLowerCase();
+			bills = bills.filter(e => {
+				const query = [
+					e.user.fullname,
+					e.customer.fullname,
+					e.products.map(e => e.product.name).join(','),
+					e.total,
+					e.bonus,
+					e.payment,
+					e.subpoint
+				];
+				return query.join('|').toLowerCase().indexOf(search) !== -1;
+			});
+			result.count = bills.length;
+
+			// sort
+			customSort(bills, sortField, order);
+
+			// skip & limit
+			result.bills = bills.splice(index, length);
+
+			if (!text) {
+				result.count = await Bill.estimatedDocumentCount();
+			}
+
+			res.message['bill.query'] = 'Done query';
+		}
+		catch (error) {
+			res.message['bill.query'] = 'Query bill error';
+			return next(error);
+		}
+
+		return res.sendwm(result);
+	},
+
+	async add(req, res, next) {
+		const rules = {
+			customerId: 'required',
+			payment: 'in:cash,bank|required',
+			subpoint: 'numeric|required',
+			products: 'array|required',
+			'products.*.code': 'digits:6|required',
+			'products.*.quantity': 'numeric',
+		};
+		const reqBill = req.body;
+		if (!validator.validateAutoRes(reqBill, rules, res)) return;
+
+		const result = {};
+		try {
+			// check customer
+			const customer = await Customer.findById(reqBill.customerId).exec();
+			if (!customer) {
+				res.status(404);
+				throw { 'customer': 'Customer not found' };
+			}
+
+			// check subpoint
+			if (reqBill.subpoint > customer.point) {
+				res.status(409);
+				throw { 'subpoint': `Subpoint must be less than customer point (${customer.point})` };
+			}
+
+			// check products
+			const codes = reqBill.products.map(e => e.code);
+			const products = await Product.find().where('code').in(codes).exec();
+			const productCodes = products.map(e => e.code);
+			const codeNotFound = codes.filter(e => !productCodes.includes(e));
+			if (codeNotFound.length > 0) {
+				res.status(404);
+				throw { 'product.codes': `Not found any product with code [${codeNotFound.join(', ')}]` };
+			}
+
+			// check quantity
+			for (const product of products) {
+				const buyQuantity = reqBill.products.find(e => e.code === product.code).quantity;
+				if (buyQuantity < 1) {
+					res.status(409);
+					throw { 'product.quantity': `Product ${product.name} quantity must be at lease one item` };
+				}
+				if (buyQuantity > product.quantity) {
+					res.status(409);
+					throw { 'product.quantity': `Product ${product.name} have ${product.quantity} quantity left ` };
+				}
+			}
+
+			// handle bill products
+			const billProducts = products.map(p => {
+				let sale = 0;
+				if (p.sale && p.saleBegin && p.saleEnd) {
+					let date = Date.now();
+					if (date > new Date(p.saleBegin) && date < new Date(p.saleEnd)) {
+						sale = p.sale;
+					}
+				}
+
+				return {
+					productInfo: p,
+					product: p._id,
+					price: p.price,
+					sale: sale,
+					quantity: reqBill.products.find(e => e.code === p.code).quantity
+				}
+			});
+
+			// total
+			const total = billProducts.reduce((sum, e) => {
+				sum += e.price * e.quantity * (100 - e.sale) / 100
+			}, -reqBill.subpoint).toFixed(2);
+
+			if (total < 0) {
+				res.status(409);
+				throw { subpoint: 'Subpoint must be less than total' };
+			}
+			const pointBonus = Math.round(total * pointPlus / 100);
+			customer.set('point', customer.point - reqBill.subpoint + pointBonus);
+
+			const bill = new Bill({
+				user: req.user._id,
+				customer: customer._id,
+				payment: reqBill.payment,
+				subpoint: reqBill.subpoint,
+				total,
+				bonus: pointBonus,
+				products: billProducts
+			});
+
+			result.bill = await bill.save();
+			result.customer = await customer.save();
+
+			res.message['bill.add'] = `Success! Point bonus: ${pointBonus}.  Customer point: ${customer.point}`;
+		}
+		catch (error) {
+			res.message = { ...res.message, ...error };
+			return next(error);
+		}
+
+		return res.sendwm(result);
+	}
+};
+
+module.exports = ctrl;

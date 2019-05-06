@@ -50,13 +50,12 @@ const ctrl = {
 			const customerAdd = new Customer(info);
 			// check unique
 			const customer = await Customer.findOne({
-				fullname: customerAdd.fullname,
 				phone: customerAdd.phone
 			}).exec();
 
 			if (customer) {
 				res.status(409);
-				res.message['customer.add'] = 'Customer information is exists';
+				res.message.phone = 'Customer phone is exists';
 			}
 			else {
 				result.customer = await customerAdd.save();
@@ -95,6 +94,16 @@ const ctrl = {
 				res.message.customer = 'Customer not found';
 			}
 			else {
+				// check phone update unique
+				if (customer.phone !== info.phone) {
+					const checkPhone = await Customer.findOne({ phone: info.phone }).exec();
+					if (checkPhone) {
+						res.status(409);
+						res.message.phone = 'Customer phone is exists';
+						return res.sendwm();
+					}
+				}
+
 				customer.set(info);
 				result.customer = await customer.save();
 				res.message['customer.edit'] = `Edited customer <${info.fullname}> information`;
