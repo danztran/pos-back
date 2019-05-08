@@ -21,7 +21,7 @@ const ctrl = {
 				result.count = await User.estimatedDocumentCount();
 			}
 			else {
-				result.count = await User.find().queryByString(queryOption.text).count();
+				result.count = await User.find().queryByString(queryOption.text).countDocuments();
 			}
 
 			res.message['user.query'] = 'Done query';

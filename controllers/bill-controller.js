@@ -27,30 +27,31 @@ const ctrl = {
 			let bills = await Bill.find().queryPlan('A').exec();
 
 			// search
-			const search = text.toLowerCase();
-			bills = bills.filter(e => {
-				const query = [
-					e.user.fullname,
-					e.customer.fullname,
-					e.products.map(e => e.product.name).join(','),
-					e.total,
-					e.bonus,
-					e.payment,
-					e.subpoint
-				];
-				return query.join('|').toLowerCase().indexOf(search) !== -1;
-			});
-			result.count = bills.length;
+			if (text) {
+				const search = text.toLowerCase();
+				bills = bills.filter((e) => {
+					const query = [
+						e.user.fullname,
+						e.customer.fullname,
+						e.products.map(e => e.product.name).join(','),
+						e.total,
+						e.bonus,
+						e.payment,
+						e.subpoint
+					];
+					return query.join('|').toLowerCase().indexOf(search) !== -1;
+				});
+				result.count = bills.length;
+			}
+			else {
+				result.count = await Bill.estimatedDocumentCount();
+			}
 
 			// sort
 			customSort(bills, sortField, order);
 
 			// skip & limit
 			result.bills = bills.splice(index, length);
-
-			if (!text) {
-				result.count = await Bill.estimatedDocumentCount();
-			}
 
 			res.message['bill.query'] = 'Done query';
 		}
@@ -69,7 +70,7 @@ const ctrl = {
 			subpoint: 'numeric|required',
 			products: 'array|required',
 			'products.*.code': 'digits:6|required',
-			'products.*.quantity': 'numeric',
+			'products.*.buyQuantity': 'numeric'
 		};
 		const reqBill = req.body;
 		if (!validator.validateAutoRes(reqBill, rules, res)) return;
@@ -80,13 +81,17 @@ const ctrl = {
 			const customer = await Customer.findById(reqBill.customerId).exec();
 			if (!customer) {
 				res.status(404);
-				throw { 'customer': 'Customer not found' };
+				throw { customer: 'Customer not found' };
 			}
 
 			// check subpoint
+			reqBill.subpoint = parseFloat(reqBill.subpoint);
 			if (reqBill.subpoint > customer.point) {
 				res.status(409);
-				throw { 'subpoint': `Subpoint must be less than customer point (${customer.point})` };
+				throw { subpoint: `Subpoint must be less than customer point (${customer.point})` };
+			} else if (reqBill.subpoint < 0) {
+				res.status(409);
+				throw { subpoint: `Subpoint is not valid` };
 			}
 
 			// check products
@@ -101,22 +106,22 @@ const ctrl = {
 
 			// check quantity
 			for (const product of products) {
-				const buyQuantity = reqBill.products.find(e => e.code === product.code).quantity;
+				const { buyQuantity } = reqBill.products.find(e => e.code === product.code);
 				if (buyQuantity < 1) {
 					res.status(409);
-					throw { 'product.quantity': `Product ${product.name} quantity must be at lease one item` };
+					throw { 'product.buyQuantity': `Product ${product.name} quantity must be at lease one item` };
 				}
 				if (buyQuantity > product.quantity) {
 					res.status(409);
-					throw { 'product.quantity': `Product ${product.name} have ${product.quantity} quantity left ` };
+					throw { 'product.buyQuantity': `Product ${product.name} have ${product.quantity} quantity left` };
 				}
 			}
 
 			// handle bill products
-			const billProducts = products.map(p => {
+			const billProducts = products.map((p) => {
 				let sale = 0;
 				if (p.sale && p.saleBegin && p.saleEnd) {
-					let date = Date.now();
+					const date = Date.now();
 					if (date > new Date(p.saleBegin) && date < new Date(p.saleEnd)) {
 						sale = p.sale;
 					}
@@ -126,14 +131,15 @@ const ctrl = {
 					productInfo: p,
 					product: p._id,
 					price: p.price,
-					sale: sale,
-					quantity: reqBill.products.find(e => e.code === p.code).quantity
-				}
+					sale,
+					quantity: reqBill.products.find(e => e.code === p.code).buyQuantity
+				};
 			});
 
 			// total
 			const total = billProducts.reduce((sum, e) => {
-				sum += e.price * e.quantity * (100 - e.sale) / 100
+				sum += 0;
+				return sum += e.price * e.quantity * (100 - e.sale) / 100;
 			}, -reqBill.subpoint).toFixed(2);
 
 			if (total < 0) {
@@ -157,6 +163,14 @@ const ctrl = {
 			result.customer = await customer.save();
 
 			res.message['bill.add'] = `Success! Point bonus: ${pointBonus}.  Customer point: ${customer.point}`;
+
+			// subtract product quantity
+			for (const product of products) {
+				const { buyQuantity } = reqBill.products.find(e => e.code === product.code);
+				product.quantity -= buyQuantity;
+				product.save();
+			}
+
 		}
 		catch (error) {
 			res.message = { ...res.message, ...error };

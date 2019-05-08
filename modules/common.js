@@ -3,6 +3,13 @@ module.exports = {
 	customSort(array = [], sortField, order = 'asc') {
 		if (!sortField) return true;
 		array.sort((a, b) => {
+			if (['updatedAt', 'createdAt'].includes(sortField)) {
+				if (order == 'desc') {
+					return (b[sortField] + '').localeCompare(a[sortField] + '');
+				} else {
+					return (a[sortField] + '').localeCompare(b[sortField] + '');
+				}
+			}
 			const split = sortField.split('.');
 			let afield = { ...a }._doc;
 			let bfield = { ...b }._doc;

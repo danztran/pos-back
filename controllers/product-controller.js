@@ -39,7 +39,7 @@ const ctrl = {
 				result.count = await Product.estimatedDocumentCount();
 			}
 			else {
-				result.count = await Product.find().queryByString(queryOption.text).count();
+				result.count = await Product.find().queryByString(queryOption.text).countDocuments();
 			}
 
 			res.message['product.query'] = 'Done query';
