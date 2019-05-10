@@ -89,9 +89,10 @@ const ctrl = {
 			if (reqBill.subpoint > customer.point) {
 				res.status(409);
 				throw { subpoint: `Subpoint must be less than customer point (${customer.point})` };
-			} else if (reqBill.subpoint < 0) {
+			}
+			else if (reqBill.subpoint < 0) {
 				res.status(409);
-				throw { subpoint: `Subpoint is not valid` };
+				throw { subpoint: 'Subpoint is not valid' };
 			}
 
 			// check products
@@ -149,7 +150,7 @@ const ctrl = {
 			const pointBonus = Math.round(total * pointPlus / 100);
 			customer.set('point', customer.point - reqBill.subpoint + pointBonus);
 
-			const bill = new Bill({
+			const bill = await new Bill({
 				user: req.user._id,
 				customer: customer._id,
 				payment: reqBill.payment,
@@ -157,12 +158,16 @@ const ctrl = {
 				total,
 				bonus: pointBonus,
 				products: billProducts
-			});
-
-			result.bill = await bill.save();
+			}).save();
 			result.customer = await customer.save();
 
-			res.message['bill.add'] = `Success! Point bonus: ${pointBonus}.  Customer point: ${customer.point}`;
+			result.bill = await bill
+					.populate('user', 'fullname')
+					.populate('customer', 'fullname phone')
+					.populate('products.product', 'name')
+					.execPopulate();
+
+			res.message['bill.add'] = `Success! Point bonus: ${pointBonus}.  Current point: ${customer.point}`;
 
 			// subtract product quantity
 			for (const product of products) {
@@ -170,7 +175,6 @@ const ctrl = {
 				product.quantity -= buyQuantity;
 				product.save();
 			}
-
 		}
 		catch (error) {
 			res.message = { ...res.message, ...error };

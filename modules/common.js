@@ -29,7 +29,7 @@ module.exports = {
 				bfield = temp;
 			}
 			if (typeof afield === 'number') {
-				return afield > bfield;
+				return afield - bfield;
 			}
 			afield += '';
 			bfield += '';
