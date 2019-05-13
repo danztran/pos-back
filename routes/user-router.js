@@ -5,8 +5,9 @@ const authMiddleware = requireWrp('middlewares/auth-middleware');
 
 // middleware check authorize
 router.use(authMiddleware.authen);
-router.use(authMiddleware.authenAdmin);
+router.post('/selfEdit', userController.selfEdit);
 
+router.use(authMiddleware.authenAdmin);
 router.post('/add', userController.add);
 router.post('/edit', userController.edit);
 router.post('/query', userController.query);

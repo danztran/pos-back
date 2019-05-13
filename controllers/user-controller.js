@@ -1,4 +1,5 @@
 const User = requireWrp('models/user');
+const dancrypt = requireWrp('modules/dancrypt');
 const validator = requireWrp('modules/validator-config');
 
 const ctrl = {
@@ -76,6 +77,7 @@ const ctrl = {
 			fullname: 'required',
 			username: 'required|alpha_num|between:3,32',
 			phone: 'numeric|digits:10|required',
+			// password: 'present'
 			isStaff: 'required|boolean',
 			isAdmin: 'required|boolean'
 		};
@@ -107,6 +109,58 @@ const ctrl = {
 			user.set(userInfo);
 			result.user = await user.save();
 			res.message['user.edit'] = `Edited user <${userInfo.fullname}> information`;
+		}
+		catch (error) {
+			res.message = { ...res.message, ...error };
+			return next(error);
+		}
+
+		return res.sendwm(result);
+	},
+
+	async selfEdit(req, res, next) {
+		const rules = {
+			fullname: 'required',
+			phone: 'numeric|digits:10|required',
+			curpassword: 'required', // if change
+			password: 'string',
+			username: 'rejected',
+			isAdmin: 'rejected',
+			isStaff: 'rejected',
+			sysAdmin: 'rejected'
+		};
+		const editInfo = req.body;
+
+		// validate
+		if (!validator.validateAutoRes(editInfo, rules, res)) return;
+
+		const result = {};
+
+		try {
+			// find and update
+			const user = await User.findOne({
+				username: req.user.username
+			}).exec();
+
+			if (!user) {
+				// if username not found. close.
+				res.status(404);
+				req.logout();
+				throw { username: 'User not found' };
+			}
+
+			if (dancrypt.dec(user.password) !== editInfo.curpassword) {
+				res.status(409);
+				throw { curpassword : 'Current password is incorrect' };
+			}
+
+			user.set(editInfo);
+			await user.save();
+			const info = { ...user }._doc;
+			delete info.password;
+			delete info._id;
+			result.user = info;
+			res.message['user.selfedit'] = `Edited user <${editInfo.fullname}> information`;
 		}
 		catch (error) {
 			res.message = { ...res.message, ...error };

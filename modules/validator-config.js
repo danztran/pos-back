@@ -5,6 +5,10 @@ validator.setAttributeFormatter((attribute) => {
 	return attribute.replace(firstkey, firstkey.toUpperCase());
 });
 
+validator.register('rejected', function(value, requirement, attribute) { // requirement parameter defaults to null
+	return !Boolean(value);
+}, 'The :attribute is rejected.');
+
 module.exports = {
 
 	// return raw validator
