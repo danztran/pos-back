@@ -21,7 +21,7 @@ const ctrl = {
 	login(req, res, next) {
 		if (req.user) {
 			res.message['auth.login'] = 'You have already logged in';
-			return res.sendwm();
+			return res.sendwm({ user: ctrl.getSafeInfo(req.user) });
 		}
 		passport.authenticate('local', (err, user, info) => {
 			const result = {};
@@ -36,7 +36,7 @@ const ctrl = {
 			}
 			else if (!user.isStaff && !user.isAdmin) {
 				res.status(403);
-				res.message['auth.login'] = 'Your account is currently disabled';
+				res.message['auth.login'] = 'This account is currently disabled';
 			}
 			else {
 				req.logIn(user, (err) => {

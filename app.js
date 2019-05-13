@@ -31,8 +31,8 @@ const host = port === 8080 ? 'http://localhost:8080/' : '';
 mongoose.set('useCreateIndex', true);
 mongoose.connect(dbconfig.uri, { useNewUrlParser: true }).then(() => {
 	app.listen(port, () => {
-		console.log('\n\tListening on:',
-		            '\x1b[36m\x1b[4m',
+		console.log('\n- Listening on:',
+		            '\x1b[96m',
 		            host,
 		            '\x1b[0m\n');
 	});

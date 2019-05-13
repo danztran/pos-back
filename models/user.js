@@ -7,6 +7,7 @@ const UserSchema 	= new mongoose.Schema({
 	phone: { type: String },
 	username: { type: String, requried: true, unique: true },
 	password: { type: String, required: true },
+	sysAdmin: { type: Boolean, default: false },
 	isAdmin: { type: Boolean, default: false },
 	isStaff: { type: Boolean, default: true }
 }, {
@@ -35,7 +36,7 @@ UserSchema.query.queryByString = function(str) {
 	});
 };
 
-UserSchema.query.queryPlan = function(plan, options) {
+UserSchema.query.queryPlan = function(plan, options, req) {
 	const {
 		text, sortField, order, index, length
 	} = options;
@@ -45,9 +46,17 @@ UserSchema.query.queryPlan = function(plan, options) {
 		case 'A':
 			data = this
 				.queryByString(text)
+				.where('username').nin([req.user.username])
+				.where('sysAdmin').equals(false)
 				.sort((order === 'asc' ? '' : '-') + sortField)
 				.skip(parseInt(index))
 				.limit(parseInt(length));
+
+		case 'B':
+			data = this
+				.queryByString(text)
+				.where('username').nin([req.user.username])
+				.where('sysAdmin').equals(false)
 
 		default:
 			data = this;
