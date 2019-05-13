@@ -75,8 +75,7 @@ const ctrl = {
 		const rules = {
 			fullname: 'required',
 			username: 'required|alpha_num|between:3,32',
-			phone: 'required',
-			password: 'required',
+			phone: 'numeric|digits:10|required',
 			isStaff: 'required|boolean',
 			isAdmin: 'required|boolean'
 		};

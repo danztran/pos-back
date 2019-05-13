@@ -4,7 +4,7 @@ const dancrypt 		= requireWrp('modules/dancrypt');
 
 const UserSchema 	= new mongoose.Schema({
 	fullname: { type: String, required: true },
-	phone: { type: String },
+	phone: { type: String, required: true },
 	username: { type: String, requried: true, unique: true },
 	password: { type: String, required: true },
 	sysAdmin: { type: Boolean, default: false },
@@ -48,6 +48,7 @@ UserSchema.query.queryPlan = function(plan, options, req) {
 				.queryByString(text)
 				.where('username').nin([req.user.username])
 				.where('sysAdmin').equals(false)
+				.select('-password -sysAdmin -__v')
 				.sort((order === 'asc' ? '' : '-') + sortField)
 				.skip(parseInt(index))
 				.limit(parseInt(length));
