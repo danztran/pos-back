@@ -22,6 +22,7 @@ const userRouter = requireWrp('routes/user-router');
 const customerRouter = requireWrp('routes/customer-router');
 const productRouter = requireWrp('routes/product-router');
 const billRouter = requireWrp('routes/bill-router');
+const activityLogRouter = requireWrp('routes/activity-log-router');
 
 const app = express();
 const port = process.env.POST || 8080;
@@ -66,6 +67,7 @@ app.use('/user', userRouter);
 app.use('/customer', customerRouter);
 app.use('/product', productRouter);
 app.use('/bill', billRouter);
+app.use('/activity-log', activityLogRouter);
 
 // error middleware
 app.use(errorHandlerMiddleware);

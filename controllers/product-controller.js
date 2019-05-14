@@ -1,4 +1,5 @@
 const Product = requireWrp('models/product');
+const ActivityLog = requireWrp('models/activity-log');
 const validator = requireWrp('modules/validator-config');
 
 const ctrl = {
@@ -10,7 +11,7 @@ const ctrl = {
 		const { code } = req.params;
 		const result = {};
 		try {
-			result.product = await Product.findOne({code}).exec();
+			result.product = await Product.findOne({ code }).exec();
 		}
 		catch (error) {
 			res.message['product.info'] = 'Get product error';
@@ -81,6 +82,14 @@ const ctrl = {
 			else {
 				result.product = await productAdd.save();
 				res.message['product.add'] = `Added new product <${productAdd.name}>`;
+
+				ActivityLog.create({
+					actor: req.user._id,
+					action: 'product.add',
+					target: result.product._id,
+					model: 'Product',
+					note: '<:actor> added new product <:target>'
+				});
 			}
 		}
 		catch (error) {
@@ -127,6 +136,14 @@ const ctrl = {
 				product.set(productInfo);
 				result.product = await product.save();
 				res.message['product.edit'] = `Edited product <${productInfo.name}> information`;
+
+				ActivityLog.create({
+					actor: req.user._id,
+					action: 'product.edit',
+					target: result.product._id,
+					model: 'Product',
+					note: '<:actor> edited information of product <:target>'
+				});
 			}
 		}
 		catch (error) {

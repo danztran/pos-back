@@ -1,4 +1,5 @@
 const User = requireWrp('models/user');
+const ActivityLog = requireWrp('models/activity-log');
 const dancrypt = requireWrp('modules/dancrypt');
 const validator = requireWrp('modules/validator-config');
 
@@ -63,6 +64,13 @@ const ctrl = {
 
 			result.user = await userAdd.save();
 			res.message['user.add'] = `Added new user <${userAdd.fullname}>`;
+			ActivityLog.create({
+				actor: req.user._id,
+				action: 'user.add',
+				target: result.user._id,
+				model: 'User',
+				note: '<:actor> added new user <:target>'
+			});
 		}
 		catch (error) {
 			res.message = { ...res.message, ...error };
@@ -107,8 +115,18 @@ const ctrl = {
 			}
 
 			user.set(userInfo);
-			result.user = await user.save();
+			await user.save();
+			const info = { ...user }._doc;
+			delete info.password;
+			result.user = info;
 			res.message['user.edit'] = `Edited user <${userInfo.fullname}> information`;
+			ActivityLog.create({
+				actor: req.user._id,
+				action: 'user.edit',
+				target: result.user._id,
+				model: 'User',
+				note: '<:actor> edited profile of user <:target>'
+			});
 		}
 		catch (error) {
 			res.message = { ...res.message, ...error };
@@ -151,16 +169,22 @@ const ctrl = {
 
 			if (dancrypt.dec(user.password) !== editInfo.curpassword) {
 				res.status(409);
-				throw { curpassword : 'Current password is incorrect' };
+				throw { curpassword: 'Current password is incorrect' };
 			}
 
 			user.set(editInfo);
 			await user.save();
 			const info = { ...user }._doc;
 			delete info.password;
-			delete info._id;
 			result.user = info;
 			res.message['user.selfedit'] = `Edited user <${editInfo.fullname}> information`;
+			ActivityLog.create({
+				actor: req.user._id,
+				action: 'user.edit',
+				target: result.user._id,
+				model: 'User',
+				note: '<:actor> edited self profile'
+			});
 		}
 		catch (error) {
 			res.message = { ...res.message, ...error };

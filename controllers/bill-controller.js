@@ -1,8 +1,9 @@
-const validator = requireWrp('modules/validator-config');
-const { customSort } = requireWrp('modules/common');
 const Bill = requireWrp('models/bill');
 const Product = requireWrp('models/product');
 const Customer = requireWrp('models/customer');
+const ActivityLog = requireWrp('models/activity-log');
+const validator = requireWrp('modules/validator-config');
+const { customSort } = requireWrp('modules/common');
 const pointPlus = 5; // point plus after paid. % of total;
 
 const ctrl = {
@@ -162,12 +163,20 @@ const ctrl = {
 			result.customer = await customer.save();
 
 			result.bill = await bill
-					.populate('user', 'fullname')
-					.populate('customer', 'fullname phone')
-					.populate('products.product', 'name')
-					.execPopulate();
+				.populate('user', 'fullname')
+				.populate('customer', 'fullname phone')
+				.populate('products.product', 'name')
+				.execPopulate();
 
 			res.message['bill.add'] = `Success! Point bonus: ${pointBonus}.  Current point: ${customer.point}`;
+
+			ActivityLog.create({
+				actor: req.user._id,
+				action: 'bill.add',
+				target: result.bill._id,
+				model: 'Bill',
+				note: '<:actor> created new bill <:target>'
+			});
 
 			// subtract product quantity
 			for (const product of products) {

@@ -1,6 +1,7 @@
 const mongoose 		= require('mongoose');
 
 const dancrypt 		= requireWrp('modules/dancrypt');
+const ActivityLog 	= requireWrp('models/activity-log');
 
 const UserSchema 	= new mongoose.Schema({
 	fullname: { type: String, required: true },

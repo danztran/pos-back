@@ -1,4 +1,5 @@
 const Customer = requireWrp('models/customer');
+const ActivityLog = requireWrp('models/activity-log');
 const validator = requireWrp('modules/validator-config');
 
 const ctrl = {
@@ -60,6 +61,14 @@ const ctrl = {
 			else {
 				result.customer = await customerAdd.save();
 				res.message['customer.add'] = `Added new customer <${customerAdd.fullname}>`;
+
+				ActivityLog.create({
+					actor: req.user._id,
+					action: 'customer.add',
+					target: result.customer._id,
+					model: 'Customer',
+					note: '<:actor> added new customer <:target>'
+				});
 			}
 		}
 		catch (error) {
@@ -107,6 +116,14 @@ const ctrl = {
 				customer.set(info);
 				result.customer = await customer.save();
 				res.message['customer.edit'] = `Edited customer <${info.fullname}> information`;
+
+				ActivityLog.create({
+					actor: req.user._id,
+					action: 'customer.edit',
+					target: result.customer._id,
+					model: 'Customer',
+					note: '<:actor> edited information of customer <:target>'
+				});
 			}
 		}
 		catch (error) {
