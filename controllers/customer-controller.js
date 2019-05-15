@@ -67,7 +67,7 @@ const ctrl = {
 					action: 'customer.add',
 					target: result.customer._id,
 					model: 'Customer',
-					note: '<:actor> added new customer <:target>'
+					note: ':actor added new customer :target'
 				});
 			}
 		}
@@ -122,7 +122,7 @@ const ctrl = {
 					action: 'customer.edit',
 					target: result.customer._id,
 					model: 'Customer',
-					note: '<:actor> edited information of customer <:target>'
+					note: ':actor edited information of customer :target'
 				});
 			}
 		}

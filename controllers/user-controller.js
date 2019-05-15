@@ -69,7 +69,7 @@ const ctrl = {
 				action: 'user.add',
 				target: result.user._id,
 				model: 'User',
-				note: '<:actor> added new user <:target>'
+				note: ':actor added new user :target'
 			});
 		}
 		catch (error) {
@@ -125,7 +125,7 @@ const ctrl = {
 				action: 'user.edit',
 				target: result.user._id,
 				model: 'User',
-				note: '<:actor> edited profile of user <:target>'
+				note: ':actor edited profile of user :target'
 			});
 		}
 		catch (error) {
@@ -183,7 +183,7 @@ const ctrl = {
 				action: 'user.edit',
 				target: result.user._id,
 				model: 'User',
-				note: '<:actor> edited self profile'
+				note: ':actor edited self profile'
 			});
 		}
 		catch (error) {

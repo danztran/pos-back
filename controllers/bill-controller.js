@@ -175,7 +175,7 @@ const ctrl = {
 				action: 'bill.add',
 				target: result.bill._id,
 				model: 'Bill',
-				note: '<:actor> created new bill <:target>'
+				note: ':actor created new bill :target'
 			});
 
 			// subtract product quantity

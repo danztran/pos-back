@@ -88,7 +88,7 @@ const ctrl = {
 					action: 'product.add',
 					target: result.product._id,
 					model: 'Product',
-					note: '<:actor> added new product <:target>'
+					note: ':actor added new product :target'
 				});
 			}
 		}
@@ -142,7 +142,7 @@ const ctrl = {
 					action: 'product.edit',
 					target: result.product._id,
 					model: 'Product',
-					note: '<:actor> edited information of product <:target>'
+					note: ':actor edited information of product :target'
 				});
 			}
 		}
