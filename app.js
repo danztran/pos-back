@@ -5,6 +5,7 @@ const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
 const morgan = require('morgan');
+const FileStore = require('session-file-store')(session);
 
 // require with root path
 global.requireWrp = p => require(path.resolve(__dirname, p));
@@ -15,6 +16,7 @@ const dbconfig = requireWrp('config/dbconfig');
 // middlewares
 const messageMiddleware = requireWrp('middlewares/message-middleware');
 const errorHandlerMiddleware = requireWrp('middlewares/error-handler-middleware');
+const vueRouterMiddleware = requireWrp('middlewares/vue-router-middleware');
 
 // routes
 const authRouter = requireWrp('routes/auth-router');
@@ -25,8 +27,11 @@ const billRouter = requireWrp('routes/bill-router');
 const activityLogRouter = requireWrp('routes/activity-log-router');
 
 const app = express();
-const port = process.env.POST || 8080;
-const host = port === 8080 ? 'http://localhost:8080/' : '';
+const post = process.env.POST;
+const port = post || 8080;
+process.env.NODE_ENV = !!post ? 'production' : 'development';
+
+const host = port ? 'http://localhost:8080/' : 'Online server';
 
 // connect database
 mongoose.set('useCreateIndex', true);
@@ -46,30 +51,44 @@ mongoose.connect(dbconfig.uri, { useNewUrlParser: true }).then(() => {
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+if (!post) {
+	app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+	app.use(morgan('dev'));
+}
 
 // passport - session
+const maxAge = 1800000;
 app.use(session({
+	name: '_cn_s',
 	secret: 'tramanh4p47s',
-	resave: false,
-	saveUninitialized: false
+	resave: true,
+	saveUninitialized: false,
+	cookie: {
+		maxAge: maxAge
+	},
+	store: new FileStore({
+		path: './storage/sessions',
+		secret: 'tramanh9p27s',
+		ttl: maxAge/1000,
+		fileExtension: ''
+	}),
 }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
-app.use(morgan('dev'));
+
 
 // apply middleware
 app.use(messageMiddleware);
 
 // Use routes
+app.use(express.static('public'));
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
 app.use('/customer', customerRouter);
 app.use('/product', productRouter);
 app.use('/bill', billRouter);
 app.use('/activity-log', activityLogRouter);
+app.use(vueRouterMiddleware);
 
 // error middleware
 app.use(errorHandlerMiddleware);
-
-app.get('/', (req, res) => res.send('Hello World!'));
