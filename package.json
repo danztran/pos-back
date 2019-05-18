@@ -8,6 +8,7 @@
 		"dotenv": "^8.0.0",
 		"express": "^4.16.4",
 		"express-session": "^1.16.1",
+		"ip": "^1.1.5",
 		"mongoose": "^5.5.2",
 		"morgan": "^1.9.1",
 		"passport": "^0.4.0",
@@ -23,7 +24,7 @@
 	},
 	"scripts": {
 		"start": "pm2 start && pm2 logs all",
-		"stop": "pm2 stop all"
+		"stop": "pm2 stop all && pm2 delete all"
 	},
 	"eslintConfig": {
 		"extends": "airbnb-base",

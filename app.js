@@ -6,6 +6,7 @@ const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
 const morgan = require('morgan');
+const ip = require('ip');
 const FileStore = require('session-file-store')(session);
 
 // require with root path
@@ -28,31 +29,30 @@ const billRouter = requireWrp('routes/bill-router');
 const activityLogRouter = requireWrp('routes/activity-log-router');
 
 const app = express();
-const post = process.env.POST;
-const port = post || 8080;
-process.env.NODE_ENV = !!post ? 'production' : 'development';
-
-const host = port ? 'http://localhost:8080/' : 'Online server';
+const port = process.env.PORT || 8080;
+const production = process.env.NODE_ENV === 'production';
 
 // connect database
 mongoose.set('useCreateIndex', true);
-mongoose.connect(dbconfig.uri, { useNewUrlParser: true }).then(() => {
-	app.listen(port, () => {
-		console.log('\n- Listening on:',
-		            '\x1b[96m',
-		            host,
-		            '\x1b[0m\n');
+mongoose.connect(dbconfig.uri, { useNewUrlParser: true })
+	.then(() => {
+		app.listen(port, () => {
+			console.log('\n- Listening on:',
+				'\x1b[96m',
+				`${ip.address()}:${port} - ${process.env.NODE_ENV}`,
+				'\x1b[0m\n');
+		});
+
+	}).catch((err) => {
+		console.log('ERROR: Failure connect to database ! \n', err);
 	});
-}).catch((err) => {
-	console.log('ERROR: Failure connect to database ! \n', err);
-});
 
 
 // using config
 // app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-if (!post) {
+if (!production) {
 	app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 	app.use(morgan('dev'));
 }
@@ -65,14 +65,14 @@ app.use(session({
 	resave: true,
 	saveUninitialized: false,
 	cookie: {
-		maxAge: maxAge
+		maxAge
 	},
 	store: new FileStore({
 		path: './storage/sessions',
 		secret: 'tramanh9p27s',
-		ttl: maxAge/1000,
+		ttl: maxAge / 1000,
 		fileExtension: ''
-	}),
+	})
 }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions

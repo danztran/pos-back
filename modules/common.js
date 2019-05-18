@@ -1,40 +1,33 @@
-module.exports = {
+const common = {
 
 	customSort(array = [], sortField, order = 'asc') {
 		if (!sortField) return true;
 		array.sort((a, b) => {
-			if (['updatedAt', 'createdAt'].includes(sortField)) {
-				if (order == 'desc') {
-					return (b[sortField] + '').localeCompare(a[sortField] + '');
-				} else {
-					return (a[sortField] + '').localeCompare(b[sortField] + '');
-				}
-			}
-			const split = sortField.split('.');
-			let afield = { ...a }._doc;
-			let bfield = { ...b }._doc;
-			for (const field of split) {
-				if (typeof afield[field] === 'object') {
-					afield = { ...afield[field] }._doc;
-					bfield = { ...bfield[field] }._doc;
+			const props = sortField.split('.');
+			let m = JSON.parse(JSON.stringify(a));
+			let n = JSON.parse(JSON.stringify(b));
+			for (const prop of props) {
+				if (typeof m[prop] === 'object') {
+					m = JSON.parse(JSON.stringify(m[prop]));
+					n = JSON.parse(JSON.stringify(n[prop]));
 				}
 				else {
-					afield = afield[field];
-					bfield = bfield[field];
+					m = m[prop];
+					n = n[prop];
 				}
 			}
 			if (order == 'desc') {
-				const temp = afield;
-				afield = bfield;
-				bfield = temp;
+				[m, n] = [n, m];
 			}
-			if (typeof afield === 'number') {
-				return afield - bfield;
+			if (typeof m === 'number') {
+				return m - n;
 			}
-			afield += '';
-			bfield += '';
-			return afield.localeCompare(bfield);
+			return m.toString().localeCompare(n.toString());
 		});
 		return array;
 	}
+
+
 };
+
+module.exports = common;
