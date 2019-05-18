@@ -43,6 +43,7 @@ ProductSchema.query.queryPlan = function(plan, options) {
 				.sort((order === 'asc' ? '' : '-') + sortField)
 				.skip(parseInt(index))
 				.limit(parseInt(length));
+			break;
 
 		default:
 			data = this;

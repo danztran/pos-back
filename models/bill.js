@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const BillSchema = new Schema({
+	branchId: { type: String, default: process.env.BRANCH_ID || '00' },
 	user: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
 	payment: { type: String, required: true }, // [bank, cash]
 	customer: { type: Schema.Types.ObjectId, ref: 'Customer' },
@@ -24,12 +25,10 @@ BillSchema.query.queryPlan = function(plan) {
 		// Plan A: query if include text, sort by field, skip by index and limit by length
 		case 'A':
 		data = this
-		.populate('user', 'fullname')
-		.populate('customer', 'fullname phone')
-		.populate('products.product', 'name')
-		// .queryByString(text)
-		// .skip(parseInt(index))
-		// .limit(parseInt(length));
+			.populate('user', 'fullname')
+			.populate('customer', 'fullname phone')
+			.populate('products.product', 'name')
+			break;
 
 		default:
 		data = this;

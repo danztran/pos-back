@@ -48,17 +48,21 @@ UserSchema.query.queryPlan = function(plan, options, req) {
 			data = this
 				.queryByString(text)
 				.where('username').nin([req.user.username])
-				.where('sysAdmin').equals(false)
+				.where('sysAdmin')
+				.equals(false)
 				.select('-password -sysAdmin -__v')
 				.sort((order === 'asc' ? '' : '-') + sortField)
 				.skip(parseInt(index))
 				.limit(parseInt(length));
+			break;
 
 		case 'B':
 			data = this
 				.queryByString(text)
 				.where('username').nin([req.user.username])
-				.where('sysAdmin').equals(false)
+				.where('sysAdmin')
+				.equals(false);
+			break;
 
 		default:
 			data = this;

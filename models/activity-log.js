@@ -28,6 +28,7 @@ ActivityLog.query.queryPlan = function(plan, options) {
 				.limit(parseInt(length))
 				.populate('actor', 'fullname username')
 				.populate('target', 'fullname username name');
+			break;
 
 		default:
 			data = this;
