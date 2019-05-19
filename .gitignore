@@ -1,6 +1,6 @@
 #node_modules
 node_modules
-storage
+
 # Logs
 logs
 *.log
@@ -10,6 +10,11 @@ yarn-error.log*
 
 #custom-scripts
 modules/custom-script.js
+
+#
+!storage/logs
+storage/logs/*
+storage/sessions/*
 
 # Runtime data
 pids

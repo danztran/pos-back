@@ -1,4 +1,5 @@
 const passport 	= requireWrp('modules/passport-config');
+const validator 	= requireWrp('modules/validator-config');
 
 const ctrl = {
 	getSafeInfo(user) {
@@ -23,6 +24,13 @@ const ctrl = {
 			res.message['auth.login'] = 'You have already logged in';
 			return res.sendwm({ user: ctrl.getSafeInfo(req.user) });
 		}
+		const rules = {
+			username: 'string|required',
+			password: 'string|required'
+		};
+		const credentials = req.body;
+		if (!validator.validateAutoRes(credentials, rules, res)) return;
+
 		passport.authenticate('local', (err, user, info) => {
 			const result = {};
 			if (err) {

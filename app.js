@@ -7,6 +7,7 @@ const passport = require('passport');
 const cors = require('cors');
 const morgan = require('morgan');
 const ip = require('ip');
+const compression = require('compression');
 const FileStore = require('session-file-store')(session);
 
 // require with root path
@@ -37,7 +38,7 @@ mongoose.set('useCreateIndex', true);
 mongoose.connect(dbconfig.uri, { useNewUrlParser: true })
 	.then(() => {
 		app.listen(port, () => {
-			console.log('\n- Listening on:',
+			console.log('- Listening on:',
 				'\x1b[96m',
 				`${ip.address()}:${port} - ${process.env.NODE_ENV}`,
 				'\x1b[0m\n');
@@ -82,6 +83,7 @@ app.use(passport.session()); // persistent login sessions
 app.use(messageMiddleware);
 
 // Use routes
+app.use(compression());
 app.use(express.static('public'));
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
