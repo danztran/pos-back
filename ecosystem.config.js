@@ -1,8 +1,21 @@
+require('dotenv').config();
+
+let extendConfig = {};
+if (process.env.NODE_ENV === 'production') {
+
+} else {
+	extendConfig = {
+		out_file: "./storage/logs/out.log",
+		error_file: "./storage/logs/error.log",
+	}
+}
+
 module.exports = {
 	apps: [{
 		name: 'pos',
 		script: './app.js',
-		instances: 3,
+		...extendConfig,
+		instances: process.env.PM2_INSTANCES,
 		exec_mode: 'cluster',
 		autorestart: true,
 		max_memory_restart: '1G',
@@ -11,8 +24,6 @@ module.exports = {
 		env: {
 			NODE_ENV: 'development',
 			watch: true,
-			out_file: "./storage/logs/out.log",
-			error_file: "./storage/logs/error.log",
 			log_date_format: "YYYY-MM-DD HH:mm Z",
 		},
 		env_production: {

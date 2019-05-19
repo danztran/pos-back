@@ -1,4 +1,4 @@
-const env = require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -12,9 +12,6 @@ const FileStore = require('session-file-store')(session);
 
 // require with root path
 global.requireWrp = p => require(path.resolve(__dirname, p));
-
-// configs
-const dbconfig = requireWrp('config/dbconfig');
 
 // middlewares
 const messageMiddleware = requireWrp('middlewares/message-middleware');
@@ -35,7 +32,7 @@ const production = process.env.NODE_ENV === 'production';
 
 // connect database
 mongoose.set('useCreateIndex', true);
-mongoose.connect(dbconfig.uri, { useNewUrlParser: true })
+mongoose.connect(process.env.DB_URI, { useNewUrlParser: true })
 	.then(() => {
 		app.listen(port, () => {
 			console.log('- Listening on:',
